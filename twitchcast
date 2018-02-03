@@ -1,0 +1,52 @@
+#!/bin/bash
+
+DEFAULT_QUALITY="480p"
+quality=$DEFAULT_QUALITY
+
+isvalidquality()
+{
+	if [ $1 = "worst" ] || [ $1 = "360p" ] || [ $1 = "480p" ] || [ $1 = "720p" ] || [ $1 = "best" ]
+	then
+		echo true
+	else
+		echo false
+	fi
+}
+
+
+if [ $# -gt 3 ] || [ $# = 0 ]
+then
+	echo "Error with arguments... Expected twitchcast [-vlc] channelname [quality]."
+	#exit 1
+fi
+
+if [ $1 = "-vlc" ]
+then
+	name=$2
+	quality=$3
+else
+	name=$1
+	quality=$2
+fi
+
+if [ $(isvalidquality $quality) = true ]
+then
+	echo "Finding stream url of the channel twitch.tv/"$name"..."
+	url=$(streamlink -v twitch.tv/$name $quality --stream-url)
+else
+	echo "Error:quality "$quality" unknown."
+	exit 1
+fi
+
+if [ $1 = "-vlc" ]
+then
+	echo "Opening VLC..."
+	streamlink twitch.tv/$name $quality -p cvlc
+else
+	echo "Start casting..."
+	mkchromecast --source-url $url --volume --video
+fi
+
+echo -e "Thank you using twitchcast ! \nThis script is a stupidish use of streamlink and mkchromecast. We <3 THEIR amazing work!"
+
+exit 1
